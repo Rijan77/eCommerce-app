@@ -23,29 +23,36 @@ class _LogInState extends State<LogIn> {
   final _formkey = GlobalKey<FormState>();
 
 
-  userLogin ()async{
-    try{
-     await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-      
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> const BottomNav()));
+  userLogin () async {
+    try {
+      // Try to login the user
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-    }on FirebaseAuthException catch(e){
-      if(e.code=='user-not-found'){
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.redAccent,
-            content: Text(
-              "No user found for that email",
-              style: TextStyle(fontSize: 20.0),
-            )));
+      // If login is successful, navigate to BottomNav
+      if (userCredential.user != null) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const BottomNav()));
       }
-      else if(e.code=="wrong-password"){
+    } on FirebaseAuthException catch (e) {
+      // Catch Firebase authentication errors
+      if (e.code == 'user-not-found') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.redAccent,
-            content: Text(
-              "Wrong Password ! Try again",
-              style: TextStyle(fontSize: 20.0),
-            )));
+          backgroundColor: Colors.redAccent,
+          content: Text(
+            "No user found for that email",
+            style: TextStyle(fontSize: 20.0),
+          ),
+        ));
+      } else if (e.code == 'wrong-password') {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.redAccent,
+          content: Text(
+            "Wrong Password! Try again",
+            style: TextStyle(fontSize: 20.0),
+          ),
+        ));
       }
+      return; // Exit the function after handling the error
     }
   }
 
